@@ -54,10 +54,10 @@ class TestScanService(unittest.TestCase):
 
         with patch('scan.scan_service.Scan', return_value=mock_new_scan), \
              patch('scan.scan_service.ApplicationUrlService', return_value=mock_application_url_service):
-            mock_application_url_service.create.return_value = mock_application_url
+            mock_application_url_service.create_scan.return_value = mock_application_url
 
             with patch('scan.scan_service.notify_scan_created', new_callable=AsyncMock) as mock_notify_scan_created:
-                result = await self.scan_service.create(mock_scan, mock_urls)
+                result = await self.scan_service.create_scan(mock_scan, mock_urls)
 
                 self.assertTrue(result)
                 self.mock_instance.get_session().commit.assert_called()
@@ -67,7 +67,7 @@ class TestScanService(unittest.TestCase):
         mock_scan = {"type": "type1", "application_name": "app1", "start_at": "now", "status": 1}
 
         with self.assertRaises(InvalidAtributesError):
-            self.scan_service.create(mock_scan, None)
+            self.scan_service.create_scan(mock_scan, None)
 
     def test_get_unprocessed_scans(self):
         mock_scan = MagicMock()

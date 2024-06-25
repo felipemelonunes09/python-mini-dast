@@ -32,4 +32,4 @@ class Scan(Base):
     Status:             Mapped[int] = mapped_column(Integer, nullable=False)
 
     Urls:               Mapped[List["ApplicationUrl"]] = relationship(back_populates="Scan")
-    Result:             Mapped["ScanResult"] = relationship(back_populates="Scan")
+    Result:             Mapped[List["ScanResult"]] = relationship(back_populates="Scan")

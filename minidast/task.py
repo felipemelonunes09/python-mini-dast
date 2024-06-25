@@ -19,7 +19,6 @@ def send_scan_results(id: int, result: list):
     try:
         headers = {'Content-Type': 'application/json'}
         res = requests.post(f"{API_URL}/scan/{id}/result", json={ "results": result }, headers=headers)
-        print(res.status_code)
         print(res.text)
         return res
     except Exception as e :
@@ -34,7 +33,7 @@ def scan_task(scan_id: int, urls: list):
         res = update_status(scan_id, error=False)
 
         if res.status_code != 200:
-            raise BaseException()
+            raise Exception()
 
         for target in urls:
             print(f"Updating Starting active scan to scan_id [{scan_id}] -target {target['url']}")
@@ -42,9 +41,11 @@ def scan_task(scan_id: int, urls: list):
 
         
         result_list = scanner.get_results()
-        print(result_list)
+        res = send_scan_results(scan_id, result_list)           
+        
+        if res.status_code != 200:
+            raise Exception()
 
-        res = send_scan_results(scan_id, result_list)            
         res = update_status(scan_id, error=False)
 
     except Exception as e:

@@ -47,6 +47,55 @@ class ScanService(metaclass=SingletonMeta):
             return scan
         raise RegistryNotFound()
     
+    def get_scan(self, id):
+        """
+        Retrieve scan details by scan ID.
+
+        This method retrieves a scan object using the provided scan ID and constructs
+        a dictionary containing the scan's application name, type, start time, status,
+        associated URLs, and results.
+
+        Args:
+            id (int): The ID of the scan to retrieve.
+
+        Returns:
+            dict: A dictionary containing the following keys:
+                - application_name (str): The name of the application associated with the scan.
+                - type (str): The type of the scan.
+                - start_at (datetime): The start time of the scan.
+                - status (str): The status of the scan.
+                - urls (list): A list of dictionaries, each containing:
+                    - name (str): The name of the URL.
+                    - url (str): The URL.
+                - results (list): A list of dictionaries, each containing:
+                    - description (str): The description of the result.
+                    - risk (str): The risk level of the result.
+        """
+        scan = self.get_scan_by_id(id)
+        url_list = []
+        result_list = []
+
+        for url in scan.Urls:
+            url_list.append({
+                "name":     url.Name,
+                "url":      url.Url
+            })
+
+        for result in scan.Result:
+            result_list.append({
+                "description": result.Description,
+                "risk": result.Risk
+            })
+
+        return {
+            "application_name": scan.ApplicationName,
+            "type": scan.Type, 
+            "start_at": scan.StartAt,
+            "status": scan.Status,
+            "urls": url_list,
+            "results": result_list
+        }
+    
     def get_status(self, id):
         """
         Get the status of a scan by its ID.
@@ -60,7 +109,7 @@ class ScanService(metaclass=SingletonMeta):
         scan = self.get_scan_by_id(id)
         return { "status_code": scan.Status }
 
-    def create(self, scan, urls):
+    def create_scan(self, scan, urls):
         """
         Create a new scan and associated URLs.
 
@@ -97,7 +146,7 @@ class ScanService(metaclass=SingletonMeta):
 
         asyncio.get_event_loop().run_until_complete(notify_scan_created(new_scan))
         
-        return True
+        return (True, new_scan.Id)
 
     def get_unprocessed_scans(self):
         """

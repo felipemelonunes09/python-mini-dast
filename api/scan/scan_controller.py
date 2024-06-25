@@ -43,11 +43,25 @@ class ScanController(metaclass=SingletonMeta):
 
         urls = data.get("urls", None)
 
-        created = scan_service.create(scan, urls)
+        created, id = scan_service.create_scan(scan, urls)
         if created:
-            return { "message": "Registry created" },201 
+            return { "message": "Registry created", "scan_id": id }, 201 
         else:
             return { "message": "Registry could not be created" }, 500
+        
+    @scan.route("/<int:id>", methods=["GET"])
+    def get_scan(id):
+        """
+        Get the a scan by its ID.
+
+        Args:
+            - id (int): The ID of the scan.
+
+        Returns:
+            - dict: A message containing the scan.
+        """
+        scan = scan_service.get_scan(id)
+        return { "response": scan }, 200
 
     @scan.route("/<int:id>/status", methods=["GET"])
     def get_status(id):
