@@ -31,10 +31,15 @@ class TestScanResult(unittest.TestCase):
         self.session.add(scan)
         self.session.commit()
 
-        scan_result = ScanResult(Result="Some result", ScanId=scan.Id)
+        scan_result = ScanResult(
+            Description="Some result", 
+            Url="/url",
+            Risk="Medium", 
+            ScanId=scan.Id
+            )
         self.session.add(scan_result)
         self.session.commit()
 
         result_from_db = self.session.query(ScanResult).filter_by(Id=scan_result.Id).one()
-        self.assertEqual(result_from_db.Result, "Some result")
+        self.assertEqual(result_from_db.ScanId, scan.Id)
 
