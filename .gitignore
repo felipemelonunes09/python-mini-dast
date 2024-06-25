@@ -1,0 +1,24 @@
+# Arquivos de byte compilados Python
+__pycache__/
+*.pyc
+
+# Ambiente virtual
+venv/
+env/
+.venv/
+.ENV/
+
+# Logs e arquivos de dados
+*.log
+*.csv
+
+# Arquivos de build
+build/
+dist/
+*.egg-info/
+
+# Outros arquivos e diretórios
+.idea/
+*.swp
+*.swo
+.DS_Store

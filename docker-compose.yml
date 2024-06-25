@@ -1,0 +1,106 @@
+version: '3'
+services:
+
+  mysql:
+    image: "mysql:8.4.0"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mini-dast
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - my-network
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.api
+    ports: 
+      - 8080:8080
+    depends_on:
+      - mysql
+    restart: on-failure
+    environment:
+      DATABASE: mysql
+      MYSQL_HOST: mysql
+      MYSQL_HOST_LIB: mysqldb
+      MYSQL_PORT: 3306 
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: mini-dast
+      WEB_SOCKET_HOST: celery-api
+      WEB_SOCKET_PORT: 8765
+
+    networks:
+        - my-network
+
+  redis:
+      image: redis:latest
+      ports: 
+        - "6379:6379"
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+      networks:
+        - my-network
+
+  celery-api:
+    build:
+      context: ./minidast
+      dockerfile: Dockerfile.celeryapi
+    ports:
+      - 8765:8765
+    networks:
+      - my-network
+    environment:
+      BROKER_HOST: redis
+      BROKER_IDENTIFICATION: redis
+      BROKER_PORT: 6379
+
+  celery:
+    build:
+      context: ./minidast
+      dockerfile: Dockerfile.celery
+    depends_on:
+      - redis   
+      - mysql
+    networks:
+      - my-network
+    environment:
+      BROKER_HOST: redis
+      BROKER_IDENTIFICATION: redis
+      BROKER_PORT: 6379
+      API_HOST: api
+      API_PORT: 8080
+      SCANNER_PROXY_HTTP: http://zaproxy:8090
+      SCANNER_PROXY_HTTPS: http://zaproxy:8090
+
+  zaproxy:
+    image: zaproxy/zap-stable
+    command: zap.sh -daemon -port 8090 -host 0.0.0.0 -addoninstall soap -addoninstall openapi -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    links:
+      - juice-shop
+    ports:
+      - 8090:8090
+    networks:
+      - my-network
+
+  juice-shop:
+    image: "bkimminich/juice-shop"
+    ports:
+      - "3000:3000"
+    networks:
+      - my-network
+  
+volumes:
+  mysql_data:
+    
+networks:
+  my-network:
+    driver: bridge

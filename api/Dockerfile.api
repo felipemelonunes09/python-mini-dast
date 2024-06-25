@@ -1,0 +1,18 @@
+FROM python:latest
+
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . . 
+
+ENV MYSQL_HOST=mysql 
+ENV MYSQL_HOST_LIB=mysqldb 
+ENV MYSQL_PORT=3306 
+ENV MYSQL_USER=user 
+ENV MYSQL_PASSWORD=password 
+ENV MYSQL_DATABASE=mini-dast
+
+RUN python -m unittest discover test
+CMD ["gunicorn", "-b", "0.0.0.0:8080","run:app"]
