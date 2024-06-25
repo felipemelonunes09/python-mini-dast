@@ -13,7 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - my-network
+      - zapnet
 
   api:
     build:
@@ -36,7 +36,7 @@ services:
       WEB_SOCKET_PORT: 8765
 
     networks:
-        - my-network
+        - zapnet
 
   redis:
       image: redis:latest
@@ -48,7 +48,7 @@ services:
         timeout: 5s
         retries: 5
       networks:
-        - my-network
+        - zapnet
 
   celery-api:
     build:
@@ -57,13 +57,15 @@ services:
     ports:
       - 8765:8765
     networks:
-      - my-network
+      - zapnet
     environment:
       BROKER_HOST: redis
       BROKER_IDENTIFICATION: redis
       BROKER_PORT: 6379
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 8765
+    links:
+      - juice-shop
 
   celery:
     build:
@@ -73,7 +75,7 @@ services:
       - redis   
       - mysql
     networks:
-      - my-network
+      - zapnet
     environment:
       BROKER_HOST: redis
       BROKER_IDENTIFICATION: redis
@@ -82,27 +84,30 @@ services:
       API_PORT: 8080
       SCANNER_PROXY_HTTP: http://zaproxy:8090
       SCANNER_PROXY_HTTPS: http://zaproxy:8090
+    links:
+        - juice-shop
 
   zaproxy:
     image: zaproxy/zap-stable
-    command: zap.sh -daemon -port 8090 -host 0.0.0.0 -addoninstall soap -addoninstall openapi -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    command: zap.sh -daemon -port 8090 -host 0.0.0.0 -addoninstall soap -addoninstall openapi -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config network.localServers.aliases.alias.name=juice-shop 
+
     links:
       - juice-shop
     ports:
       - 8090:8090
     networks:
-      - my-network
+      - zapnet
 
   juice-shop:
     image: "bkimminich/juice-shop"
     ports:
       - "3000:3000"
     networks:
-      - my-network
+      - zapnet
   
 volumes:
   mysql_data:
     
 networks:
-  my-network:
+  zapnet:
     driver: bridge
