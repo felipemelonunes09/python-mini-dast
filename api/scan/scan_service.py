@@ -169,7 +169,7 @@ class ScanService(metaclass=SingletonMeta):
         return True
 
 
-    def create_result(self, scan_id, data):
+    def create_result(self, scan_id, results):
         """
         Create a result for a scan by its ID.
 
@@ -182,6 +182,7 @@ class ScanService(metaclass=SingletonMeta):
 
         Raises:
             - InvalidAtributesError: If the scan is already finished.
+            - InvalidAtributesError: If the results array is empty
         """
         
         scan = self.get_scan_by_id(scan_id)
@@ -189,14 +190,19 @@ class ScanService(metaclass=SingletonMeta):
         if scan.Status == ScanService.scan_status['Finished']:
             raise InvalidAtributesError("You can't add a result to a finished scan")
 
-        result = ScanResult(
-            Result = data.get('result', None),
-            ScanId = scan.Id
-        )
+        if len(results) == 0:
+         raise InvalidAtributesError("The scan result array can't be empty")
 
-        self.instance.get_session().add(result)
+        for result in results:
+            new_scan_result = ScanResult(
+                Description     = result.get("description", None),
+                Url             = result.get("url", None),
+                Risk            = result.get("risk", None),
+                ScanId          = scan.Id
+            )
+
+            self.instance.get_session().add(new_scan_result)
         self.instance.get_session().commit()
-
         return True
     
     def get_result_by_scan_id(self, id: int) -> dict:
@@ -222,8 +228,9 @@ class ScanService(metaclass=SingletonMeta):
         results = []
         for obj in results_objects:
             results.append({
-                "scan_id": obj.ScanId,
-                "result": obj.Result
+                "description": obj.Description,
+                "risk": obj.Risk,
+                "url": obj.Url,
             })
 
         return {"results": results}

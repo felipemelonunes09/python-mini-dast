@@ -10,15 +10,17 @@ def update_status(id: int, error: bool):
     try:
         headers = {'Content-Type': 'application/json'}
         res = requests.post(f"{API_URL}/scan/{id}/update-status", json={ "error_ocurred": error}, headers=headers)
+        print(res.text)
         return res
     except Exception as e:
-        print(res.text)
+        print(e)
 
-def set_scan_result(id: int, result: str):
+def send_scan_results(id: int, result: list):
     try:
-        headers = { 'Content-Type': 'application/json' }
-        res = requests.post(f"{API_URL}/scan/{id}/result", json={ "result": result }, headers=headers)
-        print("Scan")
+        headers = {'Content-Type': 'application/json'}
+        res = requests.post(f"{API_URL}/scan/{id}/result", json={ "results": result }, headers=headers)
+        print(res.status_code)
+        print(res.text)
         return res
     except Exception as e :
         print(e)
@@ -28,21 +30,22 @@ def set_scan_result(id: int, result: str):
 def scan_task(scan_id: int, urls: list):
     try:
 
-        print(f"[TASK] - Updating status for id {scan_id}")
+        print(f"Updating status for id {scan_id}")
         res = update_status(scan_id, error=False)
 
         if res.status_code != 200:
             raise BaseException()
 
         for target in urls:
-            print(f"Starting active scan to scan_id [{scan_id}] -target {target['url']}")
+            print(f"Updating Starting active scan to scan_id [{scan_id}] -target {target['url']}")
             scanner.start_scan(url=target['url'])
 
         
-        result = scanner.get_results()
-        set_scan_result(scan_id, result)            
-        res = update_status(scan_id, error=False)
+        result_list = scanner.get_results()
+        print(result_list)
 
+        res = send_scan_results(scan_id, result_list)            
+        res = update_status(scan_id, error=False)
 
     except Exception as e:
         ### setting scan status to error and futher actions can be assigned later

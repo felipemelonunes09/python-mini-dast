@@ -22,8 +22,12 @@ class ScanResult(Base):
 
     __tablename__ = "ScanResult"
 
-    Id:         Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    Result:     Mapped[str] = mapped_column(String(500), nullable=False)
-    ScanId:     Mapped[int] = mapped_column(ForeignKey("Scan.Id"))
+    Id:             Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    
+    Description:    Mapped[str] = mapped_column(String(1000), nullable=False)
 
-    Scan:       Mapped['Scan'] = relationship(back_populates='Result')
+    Url:            Mapped[str] = mapped_column(String(200), nullable=False) 
+    Risk:           Mapped[str] = mapped_column(String(50), nullable=False)
+
+    ScanId:         Mapped[int] = mapped_column(ForeignKey("Scan.Id"))
+    Scan:           Mapped['Scan'] = relationship(back_populates='Result')

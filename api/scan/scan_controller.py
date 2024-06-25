@@ -115,7 +115,13 @@ class ScanController(metaclass=SingletonMeta):
 
         Request Body JSON Format:
         {
-            "result": "string"
+            "results": [
+                {   
+                    url: "string"
+                    description: "string",
+                    description: "string"
+                }
+            ] 
         }
 
         Returns:
@@ -129,13 +135,16 @@ class ScanController(metaclass=SingletonMeta):
             raise RequestMustBeJsonError()
         
         data = request.json
-        data =  {"result": data.get("result", None)}
+        results =  data.get("results", [])
 
-        created = scan_service.create_result(id, data)  
+        if isinstance(results, str):
+            raise ZeroDivisionError()
+
+        created = scan_service.create_result(id, results)  
         if created:
-            return { "message": "Registry created" }, 201 
+            return { "message": "Registrys created" }, 201 
         else:
-            return { "message": "Registry could not be created" }, 500
+            return { "message": "Registrys could not be created" }, 500
         
 
     @scan.route("/<int:id>/result", methods=["GET"])
