@@ -11,7 +11,7 @@ def update_status(id: int, error: bool):
         headers = {'Content-Type': 'application/json'}
         res = requests.post(f"{API_URL}/scan/{id}/update-status", json={ "error_ocurred": error}, headers=headers)
         return res
-    except:
+    except Exception as e:
         print(res.text)
 
 def set_scan_result(id: int, result: str):
@@ -20,8 +20,8 @@ def set_scan_result(id: int, result: str):
         res = requests.post(f"{API_URL}/scan/{id}/result", json={ "result": result }, headers=headers)
         print("Scan")
         return res
-    except:
-        print(res.text)
+    except Exception as e :
+        print(e)
 
 
 @app.task
@@ -44,7 +44,7 @@ def scan_task(scan_id: int, urls: list):
         res = update_status(scan_id, error=False)
 
 
-    except BaseException as e:
+    except Exception as e:
         ### setting scan status to error and futher actions can be assigned later
         res = update_status(scan_id, error=True)
         print(e)
