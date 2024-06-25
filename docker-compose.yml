@@ -62,6 +62,8 @@ services:
       BROKER_HOST: redis
       BROKER_IDENTIFICATION: redis
       BROKER_PORT: 6379
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8765
 
   celery:
     build:
