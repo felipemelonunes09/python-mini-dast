@@ -4,6 +4,13 @@ import os
 from scanner.ZaproxyScanner import ZaproxyScanner
 
 ##
+## Server configuration
+##
+
+SERVER_HOST =   os.environ.get("SERVER_HOST")
+SERVER_PORT =   os.environ.get("SERVER_PORT")
+
+##
 ## Broker configuration 
 ##
 
